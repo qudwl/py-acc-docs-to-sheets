@@ -1,4 +1,5 @@
 from __future__ import print_function
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLineEdit, QLabel, QMessageBox
 
 
 from get_auth import auth
@@ -7,19 +8,63 @@ from data_parser import convert_google_document_to_json
 from data_reducer import reducer
 from add_sheets import create_sheet, add_data_to_sheet
 
-# The ID of a sample document.
-DOCUMENT_ID = '142a2yhRqaEzMS2mcNBeiMH9FPQ_eGjedR59ilV1Apa0'
+doc_id = ""
+
+
+class Form(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.initUI()
+
+    def initUI(self):
+        hbox = QVBoxLayout(self)
+        self.lbl = QLabel("Enter Google Docs URL", self)
+        self.qle = QLineEdit(self)
+        self.btn = QPushButton("Submit")
+
+        self.qle.returnPressed.connect(self.convert)
+        self.btn.clicked.connect(self.convert)
+
+        hbox.addWidget(self.lbl)
+        hbox.addSpacing(20)
+        hbox.addWidget(self.qle)
+        hbox.addWidget(self.btn)
+
+        self.setGeometry(400, 400, 350, 300)
+        self.setWindowTitle('Accessibility Docs to Sheets')
+        self.show()
+
+    def convert(self):
+        url = self.qle.text()
+        doc_id = url[url.index("d/") +
+                     2:url.index("/", url.index("d/") + 2)]
+        creds = auth()
+        document = get_data(creds, doc_id)
+        qmb = QMessageBox()
+        if document is not None:
+            parsed_arr = convert_google_document_to_json(document)
+            print(parsed_arr)
+            data = reducer(parsed_arr)
+            title = document["title"]
+            sp_id = create_sheet(creds, title)
+            if add_data_to_sheet(sp_id, creds, data):
+                qmb.setWindowTitle("Success")
+                qmb.setText("Finished successfully!")
+            else:
+                qmb.setWindowTitle("Error")
+                qmb.setText("Error")
+        else:
+            qmb.setWindowTitle("Error")
+            qmb.setText("Error")
+        qmb.exec()
 
 
 def main():
-    creds = auth()
-    document = get_data(creds, DOCUMENT_ID)
-    if document is not None:
-        data = reducer(convert_google_document_to_json(document))
-        print(data.keys())
-        title = document["title"]
-        sp_id = create_sheet(creds, title)
-        add_data_to_sheet(sp_id, creds, data)
+    app = QApplication([])
+    window = Form()
+    window.show()
+    app.exec()
 
 
 if __name__ == '__main__':

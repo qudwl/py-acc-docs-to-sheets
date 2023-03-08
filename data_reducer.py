@@ -1,8 +1,12 @@
 import re
 
 
-def url_reducer(cur, next):
+attr_arr = ["URL", "Executive Summary", "Browsers", "Tools"]
+
+
+def attr_reducer(index, cur, next):
     if "Test URL" in cur:
+        result = ""
         if "[_" not in cur:
             first = next.index("[_")
             last = next.index("_]")
@@ -12,35 +16,10 @@ def url_reducer(cur, next):
             last = cur.index("_]")
             result = cur[first + 2:last]
         return [True, result]
-    else:
-        return [False]
-
-
-def summary_reducer(cur, next):
-    if "Executive Summary" in cur:
+    elif attr_arr[index] in cur:
         return [True, next]
     else:
         return [False]
-
-
-def browser_reducer(cur, next):
-    if "Browser" in cur:
-        return [True, next]
-    else:
-        return [False]
-
-
-def tools_reducer(cur, next):
-    if "Tools" in cur:
-        return [True, next]
-    else:
-        return [False]
-
-
-attr_reducer = [["URL", url_reducer],
-                ["Executive Summary", summary_reducer],
-                ["Browsers", browser_reducer],
-                ["Tools", tools_reducer]]
 
 
 def data_reducer(page, title, lst):
@@ -62,13 +41,14 @@ def reducer(body):
     while start_index < len(body):
         key_cur = list(body[start_index].keys())[0]
         next_key = list(body[start_index + 1].keys())[0]
-        result = attr_reducer[cur_reducer_index][1](
-            body[start_index][key_cur], body[start_index + 1][next_key])
-        if result[0]:
-            data[attr_reducer[cur_reducer_index][0]] = result[1]
+        result = attr_reducer(cur_reducer_index,
+                              body[start_index][key_cur], body[start_index + 1][next_key])
+
+        if result is not None and result[0]:
+            data[attr_arr[cur_reducer_index]] = result[1]
             cur_reducer_index += 1
 
-        if cur_reducer_index >= len(attr_reducer):
+        if cur_reducer_index >= len(attr_arr):
             start_index += 1
             while "h1" not in body[start_index]:
                 start_index += 1
@@ -93,7 +73,7 @@ def reducer(body):
                 title = body[start_index]["h3"]
 
             if arr and page and title:
-                data = data_reducer(page, title, arr)
+                data.update(data_reducer(page, title, arr))
                 match = re.search(r"\d", data["succ"])
                 if match:
                     index = match.start()
