@@ -1,4 +1,5 @@
 from __future__ import print_function
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLineEdit, QLabel, QMessageBox
 
 
@@ -36,26 +37,27 @@ class Form(QWidget):
         self.show()
 
     def convert(self):
-        url = self.qle.text()
-        doc_id = url[url.index("d/") +
-                     2:url.index("/", url.index("d/") + 2)]
-        creds = auth()
-        document = get_data(creds, doc_id)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         qmb = QMessageBox()
-        if document is not None:
-            parsed_arr = convert_google_document_to_json(document)
-            data = reducer(parsed_arr)
-            title = document["title"]
-            sp_id = create_sheet(creds, title)
-            if add_data_to_sheet(sp_id, creds, data):
+        url = self.qle.text()
+        try:
+            doc_id = url[url.index("d/") +
+                         2:url.index("/", url.index("d/") + 2)]
+            creds = auth()
+            document = get_data(creds, doc_id)
+
+            if document is not None:
+                parsed_arr = convert_google_document_to_json(document)
+                data = reducer(parsed_arr)
+                title = document["title"]
+                sp_id = create_sheet(creds, title)
                 qmb.setWindowTitle("Success")
                 qmb.setText("Finished successfully!")
-            else:
-                qmb.setWindowTitle("Error")
-                qmb.setText("Error")
-        else:
+        except Exception as err:
             qmb.setWindowTitle("Error")
-            qmb.setText("Error")
+            qmb.setText(repr(err))
+        self.qle.clear()
+        QApplication.restoreOverrideCursor()
         qmb.exec()
 
 
