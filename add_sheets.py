@@ -65,13 +65,13 @@ def create_sheet(creds, title):
 def add_data_to_sheet(sp_id, creds, data):
     value_input_option = "USER_ENTERED"
     values = []
-    for i in range(0, len(data["findings"])):
+    for el in data["findings"]:
         row = []
-        row.append(data["findings"][i]["page"])
-        row.append(data["findings"][i]["title"])
-        row.append(data["findings"][i]["desc"])
-        row.append(data["findings"][i]["rec"])
-        row.append(data["findings"][i]["succ"])
+        row.append(el["page"])
+        row.append(el["title"])
+        row.append(el["desc"])
+        row.append(el["rec"])
+        row.append(el["succ"])
         values.append(row)
     body = {
         'valueInputOption': value_input_option,

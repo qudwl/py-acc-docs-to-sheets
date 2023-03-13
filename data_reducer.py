@@ -73,16 +73,16 @@ def reducer(body):
                 title = body[start_index]["h3"]
 
             if arr and page and title:
-                data.update(data_reducer(page, title, arr))
-                match = re.search(r"\d", data["succ"])
+                finding = data_reducer(page, title, arr)
+                match = re.search(r"\d", finding["succ"])
                 if match:
                     index = match.start()
-                    critera = data["succ"][index: index + 5]
-                    data["succ"] = critera
+                    critera = finding["succ"][index: index + 5]
+                    finding["succ"] = critera
 
                     if critera not in wcag:
                         wcag.append(critera)
-                findings.append(data)
+                findings.append(finding)
                 arr = None
                 title = None
 

@@ -44,7 +44,6 @@ class Form(QWidget):
         qmb = QMessageBox()
         if document is not None:
             parsed_arr = convert_google_document_to_json(document)
-            print(parsed_arr)
             data = reducer(parsed_arr)
             title = document["title"]
             sp_id = create_sheet(creds, title)
