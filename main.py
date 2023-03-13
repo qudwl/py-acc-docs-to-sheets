@@ -51,6 +51,7 @@ class Form(QWidget):
                 data = reducer(parsed_arr)
                 title = document["title"]
                 sp_id = create_sheet(creds, title)
+                add_data_to_sheet(sp_id, creds, data)
                 qmb.setWindowTitle("Success")
                 qmb.setText("Finished successfully!")
         except Exception as err:
